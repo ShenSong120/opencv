@@ -6,14 +6,14 @@ from matplotlib import pyplot as plt
 基于FLANN的匹配器(FLANN based Matcher)定位图片
 '''
 
-MIN_MATCH_COUNT = 10  # 设置最低特征点匹配数量为10
+MIN_MATCH_COUNT = 4  # 设置最低特征点匹配数量为10
 
 # template = cv2.imread('picture/template_backup.jpg', 0)  # queryImage
 # target = cv2.imread('picture/target_.jpg', 0)  # trainImage
 # template = cv2.imread('picture/img1.jpg', 0)  # queryImage
 # target = cv2.imread('picture/img2.jpg', 0)  # trainImage
-template = cv2.imread('picture/template_vertical.jpg', 0)  # queryImage
-target = cv2.imread('picture/target.jpg', 0)  # trainImage
+template = cv2.imread('picture/template1.jpg', 0)  # queryImage
+target = cv2.imread('picture/target1_bevel.jpg', 0)  # trainImage
 
 # Initiate SIFT detector创建sift检测器
 sift = cv2.xfeatures2d.SIFT_create()
@@ -30,10 +30,11 @@ matches = flann.knnMatch(des1, des2, k=2)
 good = []
 # 舍弃大于0.7的匹配
 for m, n in matches:
-    if m.distance < 0.3 * n.distance:
+    if m.distance < 0.7 * n.distance:
         good.append(m)
 # 打印特征点匹配数量
 print('特征点数量为: %d' % len(good))
+# 特征点数量至少四个才能找出匹配位置
 if len(good) >= MIN_MATCH_COUNT:
     # 获取关键点的坐标
     src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
@@ -46,7 +47,7 @@ if len(good) >= MIN_MATCH_COUNT:
     pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
     dst = cv2.perspectiveTransform(pts, M)
     print(np.int32(dst))
-    cv2.polylines(target, [np.int32(dst)], True, 0, 2, cv2.LINE_AA)
+    cv2.polylines(target, [np.int32(dst)], True, 255, 1, cv2.LINE_AA)
 else:
     print("Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT))
     matchesMask = None
